@@ -30,6 +30,9 @@ from flask import Flask, jsonify, request
 
 import audit
 import config
+import detector
+import stylometry
+import scoring
 
 app = Flask(__name__)
 
@@ -172,43 +175,72 @@ def submit():
 
     content_id = str(uuid.uuid4())
 
+    model_score = float(detector.model_signal(text))
+    style_score = float(stylometry.style_signal(text))
+
+    confidence = float(scoring.combine_signals(model_score, style_score))
+    confidence = max(0.0, min(1.0, confidence))
+
+    guess, label = scoring.score_to_label(confidence)
+
+    audit.log_decision(
+        content_id=content_id,
+        creator_id=creator_id,
+        guess=guess,
+        model_score=model_score,
+        style_score=style_score,
+        combined_score=confidence,
+        label=label,
+    )
+
     return jsonify({
         "content_id": content_id,
-        "guess": "unsure",
-        "confidence": 0.5,
-        "label": "We cannot determine whether this text was written using AI.",
-        "model_score": 0.0,
-        "style_score": 0.0,
+        "guess": guess,
+        "confidence": round(confidence, 4),
+        "label": label,
+        "model_score": round(model_score, 4),
+        "style_score": round(style_score, 4),
     }), 200
+
+
 @app.post("/appeal")
 def appeal():
-    """
-    A writer says you got it wrong. ← TODO — Milestone 5
+    payload = request.get_json(silent=True)
 
-    Expects JSON:
-        {"content_id": "...", "reasoning": "..."}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Expected a JSON object"}), 400
 
-    Should:
-      1. Check the content_id actually exists — `audit.entries_for(id)` tells
-         you. A typo here fails silently and looks like a broken endpoint,
-         which is the single most common way this milestone eats an hour.
-      2. Record the appeal with `audit.log_appeal(...)`, which moves the item
-         to `under_review`.
-      3. Confirm to the writer. No automatic re-checking needed.
+    content_id = payload.get("content_id")
+    reasoning = payload.get("reasoning")
 
-    This is the smallest endpoint in the project and the one that matters most
-    to the person on the other end. It's the only thing standing between a
-    wrong accusation and nothing at all.
-    """
-    payload = request.get_json(silent=True) or {}
+    if not isinstance(content_id, str) or not content_id.strip():
+        return jsonify({"error": "content_id is required"}), 400
 
-    # TODO: delete this and build the route.
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        return jsonify({"error": "reasoning is required"}), 400
+
+    entries = audit.entries_for(content_id)
+    decisions = [
+        entry for entry in entries
+        if entry.get("status") == "decided"
+    ]
+
+    if not decisions:
+        return jsonify({"error": "Submission not found"}), 404
+
+    creator_id = decisions[0]["creator_id"]
+
+    audit.log_appeal(
+        content_id=content_id,
+        creator_id=creator_id,
+        reasoning=reasoning,
+    )
+
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /appeal isn't built yet — see the TODO in app.py.",
-        "you_sent": payload,
-    }), 501
-
+        "content_id": content_id,
+        "status": "under_review",
+        "message": "Your appeal has been recorded for human review.",
+    }), 200
 
 # ── Already works ─────────────────────────────────────────────────────────────
 
