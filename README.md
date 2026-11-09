@@ -176,3 +176,147 @@ This example shows why I did not rely on only one signal.
 The application uses three labels.
 
 | Label | Score
+
+<!-- UNIT8_FINAL_START -->
+
+# Unit 8 ? Provenance Guard Testing and Improvement
+
+## Project Overview
+
+This project evaluates a text provenance classifier that combines a GPT-2 perplexity-based model signal with a stylometric signal. The service exposes submission, appeal, health, and audit-log endpoints.
+
+The testing focused on false positives, AI-versus-human confidence separation, classification coverage, appeals, malformed requests, rate limiting, and adversarial attacks.
+
+## Rate Limiting
+
+Rate limiting was implemented using Flask-Limiter.
+
+Configured limits:
+- 10 submissions per minute per creator
+- 200 submissions per day per creator
+
+During the staff attack run, the flood sequence produced 10 successful HTTP 200 responses followed by 2 HTTP 429 responses.
+
+Rate-limit rejections were recorded in the audit log.
+
+## Evaluation Scenarios
+
+Five evaluation categories were prepared:
+
+1. False positives on human-like writing
+2. AI-versus-human confidence separation
+3. Coverage of human, unsure, and AI classifications
+4. Appeal workflow
+5. Malformed submission handling
+
+The BEFORE evaluation runner completed three trials and generated a saved report.
+
+Important limitation: the human-like diagnostic samples were AI-generated placeholders, not independently verified human-authored samples. Therefore, the false-positive criterion and human-versus-AI confidence separation criterion cannot be claimed as validated.
+
+The appeal workflow was not fully evaluated through the runner.
+
+## BEFORE Attack Run
+
+The provided staff attack set contained 56 attacks.
+
+The BEFORE attack run completed and generated a report covering evasion, false-positive, malformed-request, and other adversarial cases.
+
+The results exposed several concerning false-positive classifications and a malformed-input server error.
+
+## Identified Vulnerability ? MF02
+
+Attack MF02 submitted a single-character input:
+
+    a
+
+Before the improvement, the application returned HTTP 500.
+
+This indicated insufficient validation before passing the input to the detector.
+
+## Implemented Improvement
+
+Input validation was added to the submission endpoint.
+
+The updated service rejects text shorter than two non-whitespace characters before running the detector.
+
+Invalid submissions are recorded through the audit rejection mechanism.
+
+The improvement preserves the existing GPT-2 and stylometry scoring approach.
+
+## Measured Before-and-After Result
+
+| Attack | Before | After | Result |
+|---|---|---|---|
+| MF02 | HTTP 500 | HTTP 400 | Improved malformed-input handling |
+
+The targeted AFTER test verified that MF02 returned HTTP 400.
+
+This is the confirmed measured improvement.
+
+## AFTER Attack Testing
+
+Additional AFTER attack runs were attempted.
+
+EV01 did not receive an HTTP response and was marked BROKE by the attack harness.
+
+The detailed error was:
+
+    ReadTimeout: HTTPConnectionPool(host='127.0.0.1', port=5000):
+    Read timed out. (read timeout=180.0)
+
+Flask health checks continued returning HTTP 200, but the GPT-2 model was not loaded.
+
+Independent testing showed Python becoming unresponsive during the PyTorch import.
+
+A subsequent attempt to repair the PyTorch installation was unsuccessful within the available time.
+
+Consequently, the full AFTER attack suite and AFTER evaluation were not completed successfully.
+
+## Audit Evidence
+
+The application generated an audit trail of classification decisions and rejected submissions.
+
+An audit export was saved to:
+
+    results/audit_extract.json
+
+The audit log includes rate-limit rejection events.
+
+## Remaining Limitations
+
+- The classifier can incorrectly label human writing as AI.
+- The evaluation does not establish reliable AI-versus-human score separation.
+- Ten successful appeals with the required status were not verified.
+- The complete malformed-input criterion was not verified after the improvement.
+- The full AFTER attack run remains incomplete.
+- PyTorch model loading became unresponsive during final testing.
+- The minimum-length validation rejects legitimate single-character text as well as malformed detector inputs.
+- Manual HELD/BROKE judgments for all staff attacks were not completed.
+
+## Evidence Files
+
+- results/run_2026-11-08_2252_before.md
+- results/attack_run_2026-11-08_2259_before.md
+- results/attack_run_2026-11-08_2305_after.md
+- results/attack_run_2026-11-08_2314_after.md
+- results/attack_run_2026-11-08_2337_after.md
+- results/attack_run_2026-11-08_2344_after.md
+- results/audit_extract.json
+
+## How I Used AI
+
+I used AI assistance to develop evaluation scenarios, implement and review input validation, troubleshoot Windows PowerShell and dependency problems, and organize the testing evidence.
+
+I verified the MF02 improvement through the actual attack runner.
+
+I did not treat AI-generated diagnostic samples as genuine human-authored writing or claim that incomplete tests passed.
+
+## Conclusion
+
+The project demonstrates rate limiting, audit logging, adversarial evaluation, and one verified security improvement.
+
+The confirmed improvement is that MF02 changed from an HTTP 500 server error to an HTTP 400 client error.
+
+Additional testing is required to establish that all five evaluation criteria pass.
+
+<!-- UNIT8_FINAL_END -->
