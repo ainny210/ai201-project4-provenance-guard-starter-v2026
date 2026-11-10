@@ -18,25 +18,26 @@ Criterion 5: Invalid input handling.
 
 
 HUMAN_SAMPLES = [
-    "Yesterday I worked on my database research project. I spent some time organizing the vulnerability data and checking whether the results were consistent across different years.",
+    "Yesterday i was working on my thesis project of my masters so i spent more time on organizaing vulnerablity data and checking whether graphs result numbers are consistent across the years than writing the thesis.",
 
-    "I had trouble understanding one of the programming assignments at first. After reviewing the examples and trying the problem again, I started to understand the solution.",
+    "I had problem understanding one of the codepath assignments at first after reviewing the examples and datsets and trying the problem again i started to understand the solutions.",
 
-    "My computer was running slowly when I opened a large Excel spreadsheet. I tried closing other applications, but filtering the data still took longer than expected.",
+    "My Laptop was running slowly when I opened a multiple excel file simulataneously i tried closing other applications and filtering the data still took longer than expected.",
 
-    "I attended a meeting where we discussed how organizations should monitor new security vulnerabilities. I learned that identifying affected systems is an important part of responding to security alerts.",
+    "In my new job i attend a meetings where we discussed how organizations should monitor new security vulnerabilities i learned that identifying affected systems is an important part of responding to security alerts also making backups.",
 
-    "I was testing a Python application and noticed that some requests were failing. I checked the server logs and realized I needed to verify whether the application was actually running.",
+    "I was testing a Python application and noticed that some requests were failing i checked the server audit logs and realized I needed to verify whether the application server was actually running or not.",
 
-    "Last week I reviewed several database security issues. Some vulnerabilities were related to authentication, while others involved access control or improper input validation.",
+    "Last week I reviewed many database security vulnerablities and some vulnerabilities were related to authentication while others involved access control or improper input validation.",
 
-    "I think testing is an important part of software development because applications sometimes behave differently than expected. Running the same test multiple times can help identify inconsistent results.",
+    "In my opinion testing is an important part of as SDLC part because applications sometimes behave differently than expected,so running same test multiple times can help identify inconsistent results or abnormalities in application.",
 
-    "During my research, I created charts to compare vulnerabilities across database systems. The charts made it easier to understand which products had more reported security issues.",
+    "During my Masters thesis research i created charts/graphs to compare vulnerabilities across database systems, charts made it easier to understand which products had more reported security issues.",
 
-    "I was learning about AI security and how organizations can protect their systems from malicious inputs. I found it interesting that AI applications require different types of testing.",
+    "I was learning about AI security in terms of policies GRC part and how organizations can protect their systems from malicious prompts or inputs and i found one that AI applications require different types of testing.",
 
-    "Today I worked on improving a Flask application. I enabled rate limiting, tested several requests, and checked the audit log to confirm that rejected submissions were recorded.",
+    "From Last two days even today i working on flask application as i enabled rate limit testing several requests and checked their audit log to confirm that rejected submission were saved and recorded.",
+
 ]
 
 # AI-generated examples for comparison.

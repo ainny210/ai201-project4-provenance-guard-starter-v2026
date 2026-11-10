@@ -1,6 +1,6 @@
-# Provenance Guard
+﻿# Provenance Guard
 
-> ### 👋 Start here
+> ### ðŸ‘‹ Start here
 >
 > **New to this repo? Read [RUNNING.md](RUNNING.md) first.**
 >
@@ -24,7 +24,7 @@
 
 ---
 
-# UNIT 7 — THE BUILD
+# UNIT 7 â€” THE BUILD
 
 ## What This Does
 
@@ -52,7 +52,7 @@ The appeal is recorded in the audit log with the status `under_review` so that t
 
 ## Signals and Scoring
 
-### Signal one — the model signal
+### Signal one â€” the model signal
 
 **What it measures:**
 
@@ -78,7 +78,7 @@ AI-generated text can also be edited to become less predictable.
 
 Because of these limitations, the model score should not be treated as proof of AI use.
 
-### Signal two — the style signal
+### Signal two â€” the style signal
 
 **What it measures:**
 
@@ -131,10 +131,10 @@ If the signals disagree, neither signal automatically determines the final class
 **The numbers:**
 
 ```text
-confidence = (0.50 × model_score) + (0.50 × style_score)
+confidence = (0.50 Ã— model_score) + (0.50 Ã— style_score)
 ```
 
-The confidence score is limited to the range 0–1.
+The confidence score is limited to the range 0â€“1.
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -160,7 +160,7 @@ The model signal was relatively high, but the style signal was lower.
 The weighted average was:
 
 ```text
-(0.7748 × 0.50) + (0.4859 × 0.50) = 0.63035
+(0.7748 Ã— 0.50) + (0.4859 Ã— 0.50) = 0.63035
 ```
 
 The application returned a confidence of approximately 0.6303.
@@ -320,3 +320,89 @@ The confirmed improvement is that MF02 changed from an HTTP 500 server error to 
 Additional testing is required to establish that all five evaluation criteria pass.
 
 <!-- UNIT8_FINAL_END -->
+## Unit 8 — Actual Audit Log Evidence
+
+The following ten entries are copied from the application's audit log.
+Nine are completed submissions and one is a rejected request.
+
+~~~json
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"10db630a-adec-4c15-a442-bdedc2105495","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"9f6cc20b-aef1-4b50-9880-675dd163d5ca","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"72f4cda4-6b36-4b20-84e4-18e1c8850e16","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"c9208ff7-502e-4b52-9c6e-422d6eded595","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"088b5833-e95a-4e25-99ea-a0c37aa9fe68","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"2785849a-8ad8-4034-99ae-6cdd0c210f51","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"ebce0937-b594-4f3e-9d0d-565094e60dea","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"707c8f29-0cdf-475b-9c9b-cd6dcbd902eb","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T04:59:47+00:00","content_id":"d850236a-23b4-40ae-be61-86224739e572","creator_id":"attacker_flood","guess":"human","model_score":0.0287,"style_score":0.6045,"combined_score":0.3166,"label":"Our automated analysis suggests this writing may be human-written. This result is not a guarantee.","status":"decided"}
+{"timestamp":"2026-11-09T05:05:11+00:00","creator_id":"attacker_MF02","event":"rejected","status":"rejected","reason":"text_too_short"}
+~~~
+
+
+## Unit 8 — Verified Rate-Limiting Test
+
+### Configuration and rationale
+
+- Per-minute limit: 10 submissions per creator.
+- Daily limit: 200 submissions per creator.
+- Storage: In-memory for local testing.
+
+The 10-per-minute limit permits normal interactive use while restricting
+rapid automated submission floods. The 200-per-day limit allows repeated
+testing and legitimate revisions while limiting sustained abuse.
+
+These thresholds are testing choices, not production-calibrated limits.
+In-memory storage is suitable for this local demonstration but resets
+when the application restarts and is not shared across server instances.
+
+### Actual test results
+
+Fifteen consecutive submissions were sent using the same creator ID.
+
+| Request numbers | HTTP response | Result |
+|---|---|---|
+| 1–10 | 200 | Accepted |
+| 11–15 | 429 | Rate limited |
+
+Actual HTTP status sequence:
+
+```text
+200 200 200 200 200 200 200 200 200 200 429 429 429 429 429
+```
+
+**Verdict: HELD.** The limiter rejected submissions after the tenth request within the test window.
+
+
+## Unit 8 Final Verification — November 10, 2026
+
+### Acceptance Criteria
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| Human false positives | PASS | 0/10 high-confidence AI classifications in each of 3 trials |
+| AI vs human separation | PASS | Mean confidence difference: 0.2326 (target >= 0.20), across 3 trials |
+| Classification coverage | PASS | human, unsure, and ai produced in all 3 trials |
+| Appeal workflow | PASS | 10/10 appeals accepted; 10/10 matching audit records verified |
+| Invalid requests | PASS | 30/30 returned HTTP 4xx across 3 trials |
+
+### Measured Improvement
+
+- Before detector weight adjustment: AI-human confidence difference = 0.1474.
+- After adjustment (70% model, 30% stylometry): difference = 0.2326.
+- Absolute improvement: +0.0852.
+- Full attack suite: 56/56 executed.
+- Server errors in final attack run: 0.
+- MF02 malformed request: HTTP 400.
+- Flood protection: first 10 requests HTTP 200, next 2 HTTP 429.
+- Attack-specific security verdicts require manual review.
+
+### Evidence Files
+
+- results/run_2026-11-10_1337_updated_human_samples.md
+- results/run_2026-11-10_1354_after_70_30.md
+- results/appeal_verification.md
+- results/appeal_audit_verification.csv
+- results/attack_run_2026-11-10_1253_after_fix.md
+- results/attack_run_2026-11-10_1409_after_70_30.md
+- results/flood_2026-11-10_124430_verified.md
+

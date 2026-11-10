@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Provenance Guard - Web Service
 
@@ -336,7 +336,7 @@ def appeal():
 
     return jsonify({
         "content_id": content_id,
-        "status": "under_review",
+        "status": "appealed",
         "message": "Your appeal has been recorded for human review.",
     }), 200
 
