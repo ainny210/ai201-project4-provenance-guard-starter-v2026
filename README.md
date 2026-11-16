@@ -406,3 +406,131 @@ Actual HTTP status sequence:
 - results/attack_run_2026-11-10_1409_after_70_30.md
 - results/flood_2026-11-10_124430_verified.md
 
+
+## Capstone
+
+**What This Extends**
+
+This capstone extends my existing Unit 7/8 Provenance Guard AI-content detection service. The new work focuses on operational observability rather than changing the detection algorithm.
+
+**The Shape**
+
+Shape A — Deploy and Instrument.
+
+I added request-duration measurements and structured request logs so I can inspect successful and rejected requests after execution.
+
+Out of scope: retraining the AI model, changing classification thresholds, and deploying to a paid cloud hosting service.
+
+**Running It**
+
+Path B — Local with Logs. Reproducible Windows PowerShell instructions are documented in RUNNING.md.
+
+
+**Instrumentation**
+
+The Flask service records UTC timestamps, request methods, endpoints,
+HTTP status codes, processing durations, text-length metadata, and
+rejection flags in `logs/unit9_requests.jsonl`.
+
+Full submitted text is not included.
+
+Ten actual request log entries:
+
+```jsonl
+{"timestamp": "2026-11-16T02:28:14.527710+00:00", "method": "POST", "endpoint": "/ping", "status_code": 200, "duration_ms": 0.116, "input_metadata": {"text_length": null}, "output": {"status_code": 200}, "rejected": false}
+{"timestamp": "2026-11-16T02:28:14.530936+00:00", "method": "POST", "endpoint": "/ping", "status_code": 200, "duration_ms": 0.896, "input_metadata": {"text_length": null}, "output": {"status_code": 200}, "rejected": false}
+{"timestamp": "2026-11-16T02:28:14.534115+00:00", "method": "POST", "endpoint": "/ping", "status_code": 200, "duration_ms": 0.223, "input_metadata": {"text_length": null}, "output": {"status_code": 200}, "rejected": false}
+{"timestamp": "2026-11-16T02:28:14.535113+00:00", "method": "POST", "endpoint": "/ping", "status_code": 200, "duration_ms": 0.129, "input_metadata": {"text_length": null}, "output": {"status_code": 200}, "rejected": false}
+{"timestamp": "2026-11-16T02:28:14.536115+00:00", "method": "POST", "endpoint": "/ping", "status_code": 200, "duration_ms": 0.12, "input_metadata": {"text_length": null}, "output": {"status_code": 200}, "rejected": false}
+{"timestamp": "2026-11-16T02:28:14.564270+00:00", "method": "POST", "endpoint": "/submit", "status_code": 400, "duration_ms": 0.807, "input_metadata": {"text_length": null}, "output": {"status_code": 400}, "rejected": true}
+{"timestamp": "2026-11-16T02:28:14.564270+00:00", "method": "POST", "endpoint": "/submit", "status_code": 400, "duration_ms": 0.749, "input_metadata": {"text_length": 0}, "output": {"status_code": 400}, "rejected": true}
+{"timestamp": "2026-11-16T02:28:14.564270+00:00", "method": "POST", "endpoint": "/submit", "status_code": 400, "duration_ms": 0.77, "input_metadata": {"text_length": null}, "output": {"status_code": 400}, "rejected": true}
+{"timestamp": "2026-11-16T02:28:14.564270+00:00", "method": "POST", "endpoint": "/submit", "status_code": 400, "duration_ms": 0.765, "input_metadata": {"text_length": 1}, "output": {"status_code": 400}, "rejected": true}
+{"timestamp": "2026-11-16T02:28:14.564270+00:00", "method": "POST", "endpoint": "/submit", "status_code": 413, "duration_ms": 0.868, "input_metadata": {"text_length": 10001}, "output": {"status_code": 413}, "rejected": true}
+```
+
+**What It Costs**
+Ten successful /ping requests were measured.
+
+Average processing time: 0.199 milliseconds.
+
+For 100 requests/day:
+
+0.199 ms × 100 = 19.930 ms/day
+= 0.019930 seconds/day.
+
+This measures lightweight /ping processing only, not GPT-2 inference
+or concurrent production traffic.
+
+Additional cloud hosting cost: $0 because the application runs locally.
+Hardware, electricity, and development time are excluded.
+
+The GPT-2 download is approximately 550 MB. PyTorch also requires
+substantial memory, making a 512 MB free hosting instance unsuitable.
+
+**Run Log and Verdicts**
+
+Five criteria were tested three times before and after improvement.
+
+| Criterion | Baseline | Final |
+|---|---:|---:|
+| C1 | 3/3 | 3/3 |
+| C2 | 3/3 | 3/3 |
+| C3 | 3/3 | 3/3 |
+| C4 | 2/3 | 3/3 |
+| C5 | 3/3 | 3/3 |
+
+Detailed Results
+| Criterion | Target | Before T1 | Before T2 | Before T3 | After T1 | After T2 | After T3 | Verdict |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| C1 | 10 | 10 | 10 | 10 | 10 | 10 | 10 | PASS |
+| C2 | <50 ms | 0.129 | 0.124 | 0.167 | 0.108 | 0.146 | 0.112 | PASS |
+| C3 | 10 | 10 | 10 | 10 | 10 | 10 | 10 | PASS |
+| C4 | 10 | 10 | 10 | 5 | 10 | 10 | 10 | PASS after retest |
+| C5 | 10 | 10 | 10 | 10 | 10 | 10 | 10 | PASS |		
+
+C1: Complete structured request logs.
+C2: /ping processing below 50 ms.
+C3: Invalid requests rejected and logged.
+C4: Expected responses without unexpected HTTP 500 errors.
+C5: Metadata logging without storing submitted text.
+
+Evidence:
+
+criteria.md
+results/unit9_baseline.json
+results/unit9_after.json
+results/unit9_log_sample.jsonl
+
+**The Improvement**
+
+I added exception handling around the structured request logger.
+If writing a log raises OSError, Flask records the error without
+interrupting the original HTTP response.
+
+I verified this by injecting a simulated disk error using
+unit9_failure_test.py. The /ping endpoint still returned HTTP 200.
+
+One baseline C4 trial also failed. The evaluation harness was updated
+to generate unique creator IDs to avoid unintended rate-limit
+interactions. The improved C4 result cannot be attributed solely
+to the application change.
+
+**What's Still Broken**
+
+Logging failures can cause individual log entries to be lost.
+JSONL logs have no automatic rotation or centralized collection.
+The Flask development server is not production-ready.
+The benchmark does not measure GPT-2 inference or concurrency.
+The AI detector may still produce false positives.
+In-memory rate-limit state does not survive restarts.
+
+**How I Used AI**
+
+I used AI assistance to implement structured Flask request logging.
+I verified its output by inspecting real JSONL records.
+I used AI assistance to create acceptance tests and investigate
+a failed reliability trial. I checked the explanations against
+actual test results.
+I used AI assistance to create a simulated disk-error test.
+I ran it locally and confirmed that /ping still returned HTTP 200.

@@ -15,6 +15,9 @@ Unit 8 improvement:
 """
 
 import uuid
+import time
+from flask import g
+import request_logging
 
 from flask import Flask, jsonify, request
 
@@ -25,6 +28,39 @@ import stylometry
 import scoring
 
 app = Flask(__name__)
+
+# UNIT 9 REQUEST INSTRUMENTATION
+@app.before_request
+def unit9_start_timer():
+    g.unit9_start = time.perf_counter()
+
+
+@app.after_request
+def unit9_record_request(response):
+    duration_ms = (
+        time.perf_counter() - g.unit9_start
+    ) * 1000 if hasattr(g, "unit9_start") else 0.0
+
+    payload = request.get_json(silent=True)
+    submitted_text = payload.get("text") if isinstance(payload, dict) else None
+
+    text_length = len(submitted_text) if isinstance(submitted_text, str) else None
+
+    try:
+        request_logging.record_request(
+            method=request.method,
+            endpoint=request.path,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+            text_length=text_length,
+            rejected=400 <= response.status_code < 500,
+        )
+    except OSError:
+        app.logger.exception("Unit 9 request logging failed")
+
+    return response
+
+
 
 
 # ---------------------------------------------------------
