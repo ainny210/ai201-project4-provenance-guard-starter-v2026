@@ -406,3 +406,22 @@ Actual HTTP status sequence:
 - results/attack_run_2026-11-10_1409_after_70_30.md
 - results/flood_2026-11-10_124430_verified.md
 
+
+## Capstone
+
+**What This Extends**
+
+This capstone extends my existing Unit 7/8 Provenance Guard AI-content detection service. The new work focuses on operational observability rather than changing the detection algorithm.
+
+**The Shape**
+
+Shape A — Deploy and Instrument.
+
+I will add request-duration measurements and structured request logs so I can inspect successful and rejected requests after execution.
+
+Out of scope: retraining the AI model, changing classification thresholds, and deploying to a paid cloud hosting service.
+
+**Running It**
+
+Path B — Local with Logs. Reproducible Windows PowerShell instructions will be documented in RUNNING.md.
+
