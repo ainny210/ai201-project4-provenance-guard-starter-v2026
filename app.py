@@ -46,14 +46,18 @@ def unit9_record_request(response):
 
     text_length = len(submitted_text) if isinstance(submitted_text, str) else None
 
-    request_logging.record_request(
-        method=request.method,
-        endpoint=request.path,
-        status_code=response.status_code,
-        duration_ms=duration_ms,
-        text_length=text_length,
-        rejected=400 <= response.status_code < 500,
-    )
+    try:
+        request_logging.record_request(
+            method=request.method,
+            endpoint=request.path,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+            text_length=text_length,
+            rejected=400 <= response.status_code < 500,
+        )
+    except OSError:
+        app.logger.exception("Unit 9 request logging failed")
+
     return response
 
 
