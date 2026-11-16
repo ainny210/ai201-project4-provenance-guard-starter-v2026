@@ -417,13 +417,13 @@ This capstone extends my existing Unit 7/8 Provenance Guard AI-content detection
 
 Shape A — Deploy and Instrument.
 
-I will add request-duration measurements and structured request logs so I can inspect successful and rejected requests after execution.
+I added request-duration measurements and structured request logs so I can inspect successful and rejected requests after execution.
 
 Out of scope: retraining the AI model, changing classification thresholds, and deploying to a paid cloud hosting service.
 
 **Running It**
 
-Path B — Local with Logs. Reproducible Windows PowerShell instructions will be documented in RUNNING.md.
+Path B — Local with Logs. Reproducible Windows PowerShell instructions are documented in RUNNING.md.
 
 
 **Instrumentation**
@@ -478,7 +478,16 @@ Five criteria were tested three times before and after improvement.
 | C2 | 3/3 | 3/3 |
 | C3 | 3/3 | 3/3 |
 | C4 | 2/3 | 3/3 |
-| C5 | 3/3 | 3/3 |		
+| C5 | 3/3 | 3/3 |
+
+Detailed Results
+| Criterion | Target | Before T1 | Before T2 | Before T3 | After T1 | After T2 | After T3 | Verdict |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| C1 | 10 | 10 | 10 | 10 | 10 | 10 | 10 | PASS |
+| C2 | <50 ms | 0.129 | 0.124 | 0.167 | 0.108 | 0.146 | 0.112 | PASS |
+| C3 | 10 | 10 | 10 | 10 | 10 | 10 | 10 | PASS |
+| C4 | 10 | 10 | 10 | 5 | 10 | 10 | 10 | PASS after retest |
+| C5 | 10 | 10 | 10 | 10 | 10 | 10 | 10 | PASS |		
 
 C1: Complete structured request logs.
 C2: /ping processing below 50 ms.
