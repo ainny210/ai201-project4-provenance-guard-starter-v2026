@@ -1,0 +1,83 @@
+[
+  {
+    "C1": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C2": {
+      "value": 0.108,
+      "target": "<50 ms",
+      "met": true
+    },
+    "C3": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C4": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C5": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    }
+  },
+  {
+    "C1": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C2": {
+      "value": 0.146,
+      "target": "<50 ms",
+      "met": true
+    },
+    "C3": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C4": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C5": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    }
+  },
+  {
+    "C1": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C2": {
+      "value": 0.112,
+      "target": "<50 ms",
+      "met": true
+    },
+    "C3": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C4": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    },
+    "C5": {
+      "value": 10,
+      "target": 10,
+      "met": true
+    }
+  }
+]

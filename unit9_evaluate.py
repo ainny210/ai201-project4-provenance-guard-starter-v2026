@@ -1,4 +1,5 @@
-﻿import json
+import uuid
+import json
 import statistics
 from pathlib import Path
 from app import app
@@ -20,7 +21,7 @@ def ping():
 
 def bad_submit(i):
     payload = dict(invalid[i % 5])
-    payload["creator_id"] = "unit9-" + str(i)
+    payload["creator_id"] = "unit9-" + str(uuid.uuid4())
     return client.post("/submit", json=payload)
 
 def read_new(start):
