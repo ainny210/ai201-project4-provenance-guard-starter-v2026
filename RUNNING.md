@@ -306,3 +306,62 @@ is evidence, and the entries you paste into your README are what unit 8 grades.
 
 **Do not delete and recreate this repository.** You submit the same URL both
 units.
+
+---
+
+## Unit 9 Capstone — Local with Logs
+
+**Environment:** Windows PowerShell, Python 3.11.9.
+
+**Dependencies used:** Flask 3.1.3, Flask-Limiter 3.12, Transformers 4.57.6, PyTorch 2.15.0.
+
+### Installation and Startup
+
+From a clean checkout, open PowerShell in the repository folder and run:
+
+```powershell
+py -3.11 -m venv .venv311
+.\.venv311\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv311\Scripts\python.exe detector.py
+.\.venv311\Scripts\python.exe app.py
+```
+
+The GPT-2 model downloads approximately 550 MB on first use. No API key is required.
+
+Keep the server running. Open a second PowerShell terminal and verify:
+
+```powershell
+Invoke-RestMethod -Uri http://127.0.0.1:5000/ping -Method Post -ContentType "application/json" -Body '{"message":"hello"}'
+```
+
+### Request Logs
+
+Structured request logs are saved to `logs/unit9_requests.jsonl`.
+
+Each entry records the timestamp, HTTP method, endpoint, status code, processing duration, text-length metadata, and rejection status. Full submitted text is not stored in these request logs.
+
+### Acceptance Testing
+
+Run:
+
+```powershell
+.\.venv311\Scripts\python.exe unit9_evaluate_after.py
+.\.venv311\Scripts\python.exe unit9_failure_test.py
+```
+
+The evaluation script uses Flask's test client, so a separately running server is not required.
+
+Results are saved to `results/unit9_after.json`.
+
+### Hosting Decision
+
+This project uses **Shape A — Deploy and Instrument**, with **Path B — Local with Logs**.
+
+The GPT-2 model requires approximately 550 MB of downloaded files. PyTorch adds substantial memory overhead, making a 512 MB free hosting instance unsuitable.
+
+Running locally avoids hosting charges while supporting structured logging, request timing, and repeatable testing.
+
+### Limitations
+
+The Flask development server is not intended for public production use. Logs are stored locally without automatic rotation. The in-memory rate limiter resets when the application restarts.
+
