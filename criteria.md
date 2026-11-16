@@ -101,3 +101,45 @@ For 10 invalid submissions containing missing text, empty text, incorrect data t
      A number you missed stays where it is, gets diagnosed, and gets a fix
      attempted. That's where the points are.
      ───────────────────────────────────────────────────────────────────────── -->
+
+Unit 9: Capstone Acceptance Criteria
+Project: Provenance Guard, an AI content detection system
+Selected Shape: Shape A  Deploy and Instrument
+Execution Path: Path B  Local with Logs
+Extension Scope
+I am adding request timing and JSON logs to my Flask app. This will help me monitor the app, find problems, and check its speed. I am not changing the AI detection logic.
+I will test each of the five criteria below three times. Then I will make one improvement and test all five again.
+Criterion 1: Structured Request Logging
+Acceptance Criterion:
+When I send 10 test requests (5 to /ping and 5 invalid requests to /submit), 10 out of 10 should create a valid JSON log entry. Each entry must include the timestamp, HTTP method, endpoint, status code, and how long the request took.
+Why I Chose This Target:
+Logs only help if every request is recorded. If some requests are missing, I can't trust the logs when I'm trying to find a problem. The app runs on my own computer and I control the tests, so I expect every request to be logged.
+
+Criterion 2: Request Processing Time
+Acceptance Criterion:
+Over 10 requests in a row to /ping, the average server-side processing time should be under 50 milliseconds.
+Why I Chose This Target:
+/ping is a simple endpoint that does very little work. It should take only a few milliseconds on my computer. I chose 50 ms to allow some variation. If it goes over 50 ms, I will investigate whether my logging code is slowing the app down.
+
+Criterion 3: Failed Request Visibility
+Acceptance Criterion:
+When I send 10 invalid requests to /submit (including missing text, empty text, incorrect data types, and oversized text), 10 out of 10 should return the expected HTTP 400 or 413 response and create a structured log entry showing the request was rejected.
+Why I Chose This Target:
+Bad requests can point to bugs or misuse. If they aren't logged, I can't see them. With a log entry for each one, I can check when it happened, which endpoint it hit, and why it failed.
+
+Criterion 4: Local Service Reliability
+Acceptance Criterion:
+Over 10 requests in a row to the running app (5 to /ping and 5 invalid requests to /submit), all 10 should return their expected HTTP responses without unexpected HTTP 500 errors.
+Why I Chose This Target:
+Adding logging should not break the app. It worked before this change, so it should still work after. If my new code causes crashes, it is doing more harm than good.
+
+Criterion 5: Log Completeness and Data Privacy
+Acceptance Criterion:
+Out of 10 request log entries generated from /submit requests, all 10 should include input metadata (text_length), HTTP status code, timestamp, and processing duration. None should contain the full submitted text.
+Why I Chose This Target:
+I need enough detail to fix problems. For example, knowing a submission was 3,000 characters and took 250 ms is useful. But users submit their own writing, and that shouldn't be stored in request log files. Logging the details without the actual text keeps users' work private.
+Testing Commitment
+I will test all five criteria three times before changing anything. Then I will find one weakness I can measure, fix it, and test all five criteria three more times.
+I will not change my targets after seeing the results. I will mark each criterion MET or MISSED based on what I record.
+
+
